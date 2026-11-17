@@ -33,8 +33,8 @@ async function submitBooking(event) {
     try {
         // Replace with your actual API Gateway endpoint URL when connected to AWS
         // const API_ENDPOINT = 'https://YOUR_API_GATEWAY_ID.execute-api.REGION.amazonaws.com/prod/bookings';    // Use in case of deployment via SAM
-        // const API_ENDPOINT = '/bookings';                  // Use in case of deployment with Beanstalk via console
-        const API_ENDPOINT = 'https://bac5pgl517.execute-api.us-east-1.amazonaws.com/Prod/bookings';
+        const API_ENDPOINT = '/bookings';                  // Use in case of deployment with Beanstalk/ECS via console
+        // const API_ENDPOINT = 'https://bac5pgl517.execute-api.us-east-1.amazonaws.com/Prod/bookings';
 
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
