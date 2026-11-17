@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Bhaccasyoniztas Beach Resort Booking Backend
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+    Runtime: python3.13      # Use "python3.11" when deploying with Beanstalk
+
+Resources:
+  # 1. DynamoDB Table for Bookings
+  BookingsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Metadata:
+      'com.aws.cloudformation.Context':
+        why: Stores resort room reservations and guest booking records.
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      TableName: ResortBookings
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: bookingId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: bookingId
+          KeyType: HASH
+
+  # 2. Lambda Function & API Gateway Integration
+  BookingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      'com.aws.cloudformation.Context':
+        why: Handles incoming resort booking API requests and manages database interactions.
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      CodeUri: backend/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref BookingsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingsTable
+      Events:
+        PostBooking:
+          Type: Api
+          Properties:
+            Path: /bookings
+            Method: post
+        OptionsBooking:
+          Type: Api
+          Properties:
+            Path: /bookings
+            Method: options
+
+Outputs:
+  BookingApi:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/bookings"
